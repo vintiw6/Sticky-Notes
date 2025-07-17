@@ -7,6 +7,7 @@
 
 body {
     font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important; /* Force Comic Sans */
+    font-size: 17px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -30,7 +31,7 @@ body {
     overflow: hidden;
     border: 10px solid #8B4513;
     box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
-    animation: backgroundPan 60s infinite alternate ease-in-out, subtleBoardMovement 120s infinite linear;
+   animation: scrollTexture 2s infinite linear, backgroundPan 60s infinite alternate ease-in-out, subtleBoardMovement 120s infinite linear, subtleFilterPulse 30s infinite ease-in-out;
 }
 
 /* Subtle background pan animation */
@@ -49,39 +50,37 @@ body {
     100% { transform: scale(1.0) rotate(0deg); }
 }
 
+/* NEW BACKGROUND ANIMATION */
+@keyframes subtleFilterPulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.01); }
+}
 
-/* Sticky Note Styling - ALWAYS SQUARE, with subtle float */
+
+/* Sticky Note Styling - ALWAYS EXPANDED BY DEFAULT */
 .sticky-note {
     position: absolute;
-    width: 300px;
+    width: 400px;
+    min-height: 350px;
+    max-height: 550px;
     padding: 20px;
-    border-radius: 0px; /* Always square */
+    border-radius: 0px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.42, 0, 0.58, 1);
+    cursor: pointer; /* Cursor indicates clickability for focus */
+    /* --- MODIFIED: Smoother Transition for Focus Animation --- */
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);/* Increased duration and standard ease-in-out */
     transform-origin: center center;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow: hidden;
     z-index: 1;
-    transform: rotate(var(--note-rotation, 0deg)) translateY(0px);
-    animation: noteFloat 20s infinite ease-in-out alternate;
+    /* Initial rotation will now be set by JS via --note-rotation CSS variable */
+    transform: rotate(var(--note-rotation, 0deg));
+    animation: none; /* No float animation when always expanded */
+      will-change: transform; /* Add this line */
 }
 
-/* More Subtle Floating animation for notes */
-@keyframes noteFloat {
-    0% { transform: rotate(var(--note-rotation, 0deg)) translateY(0px); }
-    50% { transform: rotate(var(--note-rotation, 0deg)) translateY(-2px); }
-    100% { transform: rotate(var(--note-rotation, 0deg)) translateY(0px); }
-}
-
-
-/* Specific positions and rotations for initial notes */
-.sticky-note:nth-child(1) { top: 10%; left: 15%; --note-rotation: -3deg; animation-delay: 0s; }
-.sticky-note:nth-child(2) { top: 15%; left: 55%; --note-rotation: 5deg; animation-delay: -2s; }
-.sticky-note:nth-child(3) { top: 55%; left: 20%; --note-rotation: -7deg; animation-delay: -4s; }
-.sticky-note:nth-child(4) { top: 60%; left: 60%; --note-rotation: 2deg; animation-delay: -6s; }
 
 /* Colors for sticky notes */
 .sticky-note.yellow { background-color: #FFFFAA; }
@@ -90,26 +89,37 @@ body {
 .sticky-note.blue { background-color: #CCDDFF; }
 
 
+/* NEW: Focused State for Sticky Note (When Selected) */
+/* NEW: Focused State for Sticky Note (When Selected) */
+.sticky-note.focused {
+    z-index: 20;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    cursor: default;
+}
+
+/* NEW: Dimming effect for unfocused notes */
+.sticky-note.unfocused {
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(2px); /* This adds the blur effect */
+}
+
+
 /* --- Pin Symbol Styling (Aesthetic with PNGs) --- */
 .pin-symbol {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    transform: translateX(0%) rotateX(15deg);
+    top: -10px; /* Nudged up to compensate for the larger size */
+    left: 50%;
+    transform: translateX(-50%); /* Centers the pin horizontally */
     z-index: 2;
     pointer-events: none;
-    perspective: 100px;
-    transform-style: preserve-3d;
-    animation: pinWiggle 7s infinite ease-in-out alternate;
-
-    width: 45px;
-    height: 45px;
-    background-color: transparent;
-    background-size: 80%;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    
+    /* Bigger font size for a more prominent pin */
+    font-size: 40px; 
+    
+    /* Adds a nice shadow for depth */
+    text-shadow: 0 3px 5px rgba(0,0,0,0.2); 
 }
 
 @keyframes pinWiggle {
@@ -117,16 +127,19 @@ body {
     50% { transform: rotateX(15deg) rotateZ(0.1deg); }
     100% { transform: rotateX(15deg) rotateZ(0deg); }
 }
+@keyframes scrollTexture {
+    from { background-position: 0 0, 0 0, center; }
+    to { background-position: 20px 20px, 20px 20px, center; }
+}
 
 
 /* --- Specific Pin Symbol Styles (PNG based) --- */
 
-.pin-symbol.pin-music-png { background-image: url('assets/music.png'); background-color: #E0BBE4; border-radius: 50%; }
-.pin-symbol.pin-heart-png { background-image: url('assets/heart.png'); background-color: #FFD1DC; border-radius: 50%; }
-.pin-symbol.pin-bulb-png { background-image: url('assets/bulb.png'); background-color: #FFFF99; border-radius: 50%; }
-.pin-symbol.pin-notes-png { background-image: url('assets/notes.png'); background-color: #B2EBF2; border-radius: 10px; }
-.pin-symbol.pin-misc-png { background-image: url('assets/misc.png'); background-color: #C1E1C1; border-radius: 50%; }
-
+.pin-symbol.pin-music-png { background-image: url('assets/music.png'); }
+.pin-symbol.pin-heart-png { background-image: url('assets/heart.png'); }
+.pin-symbol.pin-bulb-png { background-image: url('assets/bulb.png'); }
+.pin-symbol.pin-notes-png { background-image: url('assets/notes.png'); }
+.pin-symbol.pin-misc-png { background-image: url('assets/misc.png'); }
 
 /* To-Do List Styling */
 .note-content {
@@ -139,11 +152,11 @@ body {
 
 .note-title {
     font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important;
-    font-size: 1.5em;
-    margin-bottom: 10px;
+    font-size: 1.8em;
+    margin-bottom: 12px;
     user-select: none;
     text-align: center;
-    cursor: text;
+    cursor: pointer;
     padding: 5px;
     min-width: 80%;
     line-height: 1.2;
@@ -152,8 +165,8 @@ body {
 /* Style for editable title input */
 .note-title-input {
     font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important;
-    font-size: 1.5em;
-    margin-bottom: 10px;
+    font-size: 1.8em;
+    margin-bottom: 12px;
     text-align: center;
     border: 1px solid #ccc;
     border-radius: 3px;
@@ -164,76 +177,30 @@ body {
 }
 
 
-/* --- To-Do List is always visible, but clipped when note is small --- */
+/* To-Do List is always fully visible within the expanded note */
 .todo-list {
     width: 100%;
     margin-top: 10px;
     overflow-y: auto;
-    max-height: 100px;
+    max-height: 400px;
     opacity: 1;
     padding-right: 5px;
-    transition: max-height 0.5s cubic-bezier(0.42, 0, 0.58, 1), opacity 0.5s cubic-bezier(0.42, 0, 0.58, 1), margin-top 0.5s cubic-bezier(0.42, 0, 0.58, 1);
-}
-
-/* When sticky note is active, the todo list expands fully */
-.sticky-note.active .todo-list {
-    /* --- MODIFIED: Increased Max Height for List --- */
-    max-height: 400px; /* Allows more tasks to be visible */
-    margin-top: 15px;
+    transition: none;
 }
 
 
-/* Sticky note expands when active */
-.sticky-note.active {
-    /* --- MODIFIED: Increased Expanded Note Size --- */
-    width: 400px; /* Increased width from 350px */
-    min-height: 350px; /* Increased min-height from 300px */
-    max-height: 550px; /* Increased max-height for very long lists */
-    transform: translate(-50%, -50%) scale(1.1) rotate(0deg) !important;
-    z-index: 10;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    top: 50% !important;
-    left: 50% !important;
-    padding-bottom: 60px; /* Space for add item form */
-    border-radius: 0px;
-    animation: none;
-}
-
-.todo-items {
-    list-style: none;
-    padding: 0;
-}
-
-.todo-item {
-    display: flex;
-    align-items: center;
-    padding: 5px 0;
-    font-size: 1.1em;
-    border-bottom: 1px dotted rgba(0,0,0,0.1);
-}
-
-.todo-item:last-child { border-bottom: none; }
-.todo-item input[type="checkbox"] { margin-right: 10px; width: 18px; height: 18px; cursor: pointer; }
-.todo-item label { flex-grow: 1; cursor: pointer; }
-.todo-item.completed label { text-decoration: line-through; color: #888; }
-
-.delete-btn {
-    background: none; border: none; color: #dc3545; font-size: 1.2em; cursor: pointer; margin-left: 10px;
-    opacity: 0.7; transition: opacity 0.2s ease-in-out;
-}
-.delete-btn:hover { opacity: 1; }
-
+/* Space for add item form */
 .add-item-form {
     display: flex; width: 100%; margin-top: 15px; position: absolute; bottom: 15px; left: 0; padding: 0 15px;
     box-sizing: border-box;
 }
 .add-item-form input[type="text"] {
-    flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 3px; margin-right: 10px;
-    font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important; font-size: 0.9em;
+    flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 3px; margin-right: 10px;
+    font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important; font-size: 1em;
 }
 .add-item-form button {
-    padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;
-    font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important; font-size: 0.9em;
+    padding: 10px 18px; background-color: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;
+    font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important; font-size: 1em;
     transition: background-color 0.2s ease;
 }
 .add-item-form button:hover { background-color: #218838; }
@@ -247,4 +214,69 @@ body {
 /* Ensure Comic Sans for todo items */
 .todo-item label, .add-item-form input, .add-item-form button {
     font-family: 'Coming Soon', "Comic Sans MS", "Comic Sans", cursive !important;
+    font-size: 1.1em; /* This will make the text about 10% bigger */
+}
+/* --- To-Do Item & Delete Button Styling --- */
+
+/* 1. Style the list item to position its children */
+.todo-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 0; /* Adds a little vertical space */
+}
+
+/* 2. Style the delete button */
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: #aaa; /* A subtle gray color */
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: auto; /* This is what pushes it to the far right */
+    padding: 0 5px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* 3. Add a hover effect for better feedback */
+.delete-btn:hover {
+    color: #af2525; /* A dark red color on hover */
+    transform: scale(1.3); /* Makes the button slightly larger on hover */
+}
+/* --- New Paper Crease Animation --- */
+
+@keyframes paperCrease {
+    0% {
+        transform: translateX(-100%) skewX(-20deg);
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.4; /* The crease is semi-visible */
+    }
+    100% {
+        transform: translateX(100%) skewX(20deg);
+        opacity: 0;
+    }
+}
+
+.board::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    
+    /* This gradient creates the 'crease' of light */
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    
+    /* Apply the animation */
+    animation: paperCrease 12s infinite ease-in-out;
+    animation-delay: 3s; /* Optional: adds a delay before starting */
 }
